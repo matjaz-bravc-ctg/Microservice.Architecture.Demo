@@ -5,7 +5,7 @@ namespace Exchange.Rates.Contracts.Messages;
 
 public interface IEcbExchangeRatesAccepted : IBaseContract
 {
-  string Symbols { get; }
+  List<string> Symbols { get; }
 
   EcbCurrencyExchange CurrencyExchange { get; }
 

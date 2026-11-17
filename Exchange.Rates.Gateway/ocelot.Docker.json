@@ -6,24 +6,48 @@
       "DownstreamHostAndPorts": [
         {
           "Host": "exchange.rates.coincap.openapi",
-          "Port": 80
+          "Port": 8080
         }
       ],
       "UpstreamPathTemplate": "/exchangeratescoincap/assetinfo",
-      "UpstreamHttpMethod": [ "GET", "OPTIONS" ]
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 20000
+      },
+      "CacheOptions": {
+        "TtlSeconds": 15,
+        "Region": "coincap-assets"
+      }
     },
-		{
-			"DownstreamPathTemplate": "/api/exchangeratesecb/eurbaserates",
-			"DownstreamScheme": "http",
-			"DownstreamHostAndPorts": [
-				{
-					"Host": "exchange.rates.ecb.openapi",
-					"Port": 80
-				}
-			],
-			"UpstreamPathTemplate": "/exchangeratesecb/eurbaserates",
-			"UpstreamHttpMethod": [ "GET", "OPTIONS" ]
-		}
+    {
+      "DownstreamPathTemplate": "/api/exchangeratesecb/eurbaserates",
+      "DownstreamScheme": "http",
+      "DownstreamHostAndPorts": [
+        {
+          "Host": "exchange.rates.ecb.openapi",
+          "Port": 8080
+        }
+      ],
+      "UpstreamPathTemplate": "/exchangeratesecb/eurbaserates",
+      "UpstreamHttpMethod": [
+        "GET",
+        "OPTIONS"
+      ],
+      "QoSOptions": {
+        "ExceptionsAllowedBeforeBreaking": 3,
+        "DurationOfBreak": 10000,
+        "TimeoutValue": 20000
+      },
+      "CacheOptions": {
+        "TtlSeconds": 60,
+        "Region": "ecb-rates"
+      }
+    }
   ],
   "GlobalConfiguration": {}
 }

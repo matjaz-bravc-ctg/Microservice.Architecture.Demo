@@ -10,5 +10,5 @@ public sealed class AssetIdSubmissionModel
   /// </summary>
   [Required]
   [FromQuery(Name = "Id")]
-  public string Id { get; set; }
+  public string Id { get; set; } = string.Empty;
 }

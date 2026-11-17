@@ -1,54 +1,53 @@
 ﻿using Exchange.Rates.Contracts.Messages;
 using Exchange.Rates.Ecb.Polling.Api.Services;
 using MassTransit;
-using Microsoft.Extensions.Logging;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace Exchange.Rates.Ecb.Polling.Api.Consumers;
 
-public sealed class SubmitExchangeRateSymbolsConsumer : IConsumer<ISubmitEcbExchangeRateSymbols>
+public sealed class SubmitExchangeRateSymbolsConsumer(
+  ILogger<SubmitExchangeRateSymbolsConsumer> logger,
+  IEcbExchangeRatesApi ecbExchangeRatesApi)
+  : IConsumer<ISubmitEcbExchangeRateSymbols>
 {
-  private readonly ILogger<SubmitExchangeRateSymbolsConsumer> _logger;
-  private readonly IEcbExchangeRatesApi _ecbExchangeRatesApi;
-
-  public SubmitExchangeRateSymbolsConsumer(ILogger<SubmitExchangeRateSymbolsConsumer> logger,
-      IEcbExchangeRatesApi ecbExchangeRatesApi)
-  {
-    _logger = logger;
-    _ecbExchangeRatesApi = ecbExchangeRatesApi;
-  }
-
   public async Task Consume(ConsumeContext<ISubmitEcbExchangeRateSymbols> context)
   {
-    if (context.RequestId != null)
+    logger.LogDebug("Exchange rates for {Symbols} requested", context.Message.Symbols);
+    if (context.RequestId is null)
     {
-      if (context.Message.Symbols?.Any() == true)
-      {
-        var symbols = string.Join(",", context.Message.Symbols);
-        var result = await _ecbExchangeRatesApi.GetLatestRates(symbols).ConfigureAwait(false);
-        if (result.Rates == null)
-        {
-          await context.RespondAsync<IEcbExchangeRatesRejected>(new
-          {
-            context.Message.EventId,
-            InVar.Timestamp,
-            context.Message.Symbols,
-            Reason = $"Exchange Rates for a {symbols} are not available"
-          });
-        }
-        else
-        {
-          await context.RespondAsync<IEcbExchangeRatesAccepted>(new
-          {
-            context.Message.EventId,
-            InVar.Timestamp,
-            context.Message.Symbols,
-            CurrencyExchange = result,
-            Message = "Exchange Rates Symbols"
-          });
-        }
-      }
+      return; // Not a request, nobody waits for an answer
     }
+
+    List<string> symbols = context.Message.Symbols ?? [];
+    if (symbols.Count == 0)
+    {
+      await RespondRejected(context, symbols, "At least one currency symbol is required");
+      return;
+    }
+
+    string joinedSymbols = string.Join(",", symbols);
+    var result = await ecbExchangeRatesApi.GetLatestRates(joinedSymbols, context.CancellationToken);
+    if (result.Rates is null)
+    {
+      await RespondRejected(context, symbols, $"Exchange Rates for a {joinedSymbols} are not available");
+      return;
+    }
+
+    await context.RespondAsync<IEcbExchangeRatesAccepted>(new
+    {
+      context.Message.EventId,
+      InVar.Timestamp,
+      Symbols = symbols,
+      CurrencyExchange = result,
+      Message = "Exchange Rates Symbols"
+    });
   }
+
+  private static Task RespondRejected(ConsumeContext<ISubmitEcbExchangeRateSymbols> context, List<string> symbols, string reason) =>
+    context.RespondAsync<IEcbExchangeRatesRejected>(new
+    {
+      context.Message.EventId,
+      InVar.Timestamp,
+      Symbols = symbols,
+      Reason = reason
+    });
 }

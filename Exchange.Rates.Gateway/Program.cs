@@ -1,44 +1,33 @@
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using Ocelot.Cache.CacheManager;
 using Ocelot.DependencyInjection;
 using Ocelot.Middleware;
-using Ocelot.Provider.Polly;
-using System.IO;
+using Ocelot.QualityOfService.Polly;
 
-IHostBuilder hostBuilder = Host.CreateDefaultBuilder(args)
-  .UseContentRoot(Directory.GetCurrentDirectory())
-  .ConfigureWebHostDefaults(webBuilder =>
-  {
-    webBuilder.ConfigureServices(services =>
-      services
-        .AddOcelot()
-        .AddCacheManager(x =>
-        {
-          x.WithDictionaryHandle();
-        })
-        .AddPolly());
-    webBuilder.Configure(app =>
-      app.UseOcelot().Wait())
-    .ConfigureAppConfiguration((hostingContext, config) =>
-    {
-      config
-        .SetBasePath(hostingContext.HostingEnvironment.ContentRootPath)
-        .AddJsonFile("appsettings.json", false, true)
-        .AddJsonFile($"appsettings.{hostingContext.HostingEnvironment.EnvironmentName}.json", true, true)
-        .AddJsonFile("ocelot.json", false, true)
-        .AddJsonFile($"ocelot.{hostingContext.HostingEnvironment.EnvironmentName}.json", optional: true)
-        .AddEnvironmentVariables();
-    })
-    .ConfigureLogging((builderContext, logging) =>
-    {
-      logging.ClearProviders();
-      logging.AddConsole();
-      logging.AddDebug();
-    });
-  });
+const string ServiceName = "Exchange.Rates.Gateway";
 
-IHost host = hostBuilder.Build();
-await host.RunAsync();
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
+
+builder.Configuration
+  .AddJsonFile("ocelot.json", optional: false, reloadOnChange: true)
+  .AddJsonFile($"ocelot.{builder.Environment.EnvironmentName}.json", optional: true, reloadOnChange: true)
+  .AddEnvironmentVariables();
+
+builder.Services
+  .AddOcelot(builder.Configuration)
+  // In-memory response cache (CacheManager dictionary handle) for routes with CacheOptions in ocelot.json
+  .AddCacheManager(cache => cache.WithDictionaryHandle())
+  // Timeouts and circuit breaker for routes with QoSOptions in ocelot.json
+  .AddPolly();
+
+builder.Services.AddHealthChecks();
+
+WebApplication app = builder.Build();
+
+// The gateway's own endpoints; every other request goes to Ocelot
+app.MapGet("/", () => ServiceName);
+app.MapHealthChecks("/health");
+app.UseRouting();
+app.UseEndpoints(_ => { });
+
+await app.UseOcelot();
+await app.RunAsync();

@@ -4,7 +4,7 @@ namespace Exchange.Rates.Contracts.Messages;
 
 public interface IEcbExchangeRatesRejected : IBaseContract
 {
-  string Symbols { get; }
+  List<string> Symbols { get; }
 
   string Reason { get; }
 }

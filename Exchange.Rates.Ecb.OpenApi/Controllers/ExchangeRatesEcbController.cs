@@ -1,84 +1,73 @@
 ﻿using Exchange.Rates.Contracts.Messages;
+using Exchange.Rates.Contracts.Models;
 using Exchange.Rates.Ecb.OpenApi.Models;
 using MassTransit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Exchange.Rates.Ecb.OpenApi.Controllers;
 
 [ApiController]
 [Produces("application/json")]
 [Route("api/[controller]")]
-public class ExchangeRatesEcbController : ControllerBase
+public class ExchangeRatesEcbController(
+  ILogger<ExchangeRatesEcbController> logger,
+  IRequestClient<ISubmitEcbExchangeRateSymbols> submitEcbExchangeRateRequestClient)
+  : ControllerBase
 {
-  private readonly ILogger<ExchangeRatesEcbController> _logger;
-  private readonly IRequestClient<ISubmitEcbExchangeRateSymbols> _submitEcbExchangeRateRequestClient;
-
-  public ExchangeRatesEcbController(ILogger<ExchangeRatesEcbController> logger,
-      IRequestClient<ISubmitEcbExchangeRateSymbols> submitEcbExchangeRateRequestClient)
-  {
-    _logger = logger;
-    _submitEcbExchangeRateRequestClient = submitEcbExchangeRateRequestClient;
-  }
-
   /// <summary>
-  /// UsdBaseRates endpoint
+  /// EurBaseRates endpoint
   /// </summary>
   /// <remarks>
   /// Exchange rates quoted against the EUR. Example Symbols list: USD,CHF,CZK
   /// </remarks>
   /// <param name="model">Currency symbols</param>
-  /// <returns></returns>
+  /// <param name="cancellationToken">Request cancellation</param>
   /// <response code="200">Returned if everything is ok</response>
-  /// <response code="400">Returned if something went wrong</response>
+  /// <response code="400">Returned if the symbols are missing or the rates are not available</response>
+  /// <response code="504">Returned if the polling service did not answer in time</response>
   [HttpGet("eurbaserates")]
-  [ProducesResponseType(StatusCodes.Status200OK)]
+  [ProducesResponseType<EcbCurrencyExchange>(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  public async Task<IActionResult> EurBaseRates([FromQuery] SymbolsSubmissionModel model)
+  [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+  public async Task<IActionResult> EurBaseRates([FromQuery] SymbolsSubmissionModel model, CancellationToken cancellationToken)
   {
+    if (!ModelState.IsValid)
+    {
+      logger.LogWarning("Invalid model: {Errors}", ModelState);
+      return BadRequest(ModelState);
+    }
+
     try
     {
-      if (!ModelState.IsValid)
+      // https://masstransit.io/documentation/concepts/requests
+      Response<IEcbExchangeRatesAccepted, IEcbExchangeRatesRejected> response =
+        await submitEcbExchangeRateRequestClient.GetResponse<IEcbExchangeRatesAccepted, IEcbExchangeRatesRejected>(new
+        {
+          EventId = NewId.NextGuid(),
+          InVar.Timestamp,
+          Symbols = model.Symbols
+            .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
+            .Select(symbol => symbol.ToUpperInvariant())
+            .ToList()
+        }, cancellationToken);
+
+      if (response.Is(out Response<IEcbExchangeRatesAccepted>? accepted))
       {
-        _logger.LogError("Invalid Model");
-        return BadRequest(ModelState);
+        return Ok(accepted.Message.CurrencyExchange);
       }
 
-      // https://masstransit-project.com/usage/requests.html#request-client
-      var (accepted, rejected) = await _submitEcbExchangeRateRequestClient.GetResponse<IEcbExchangeRatesAccepted, IEcbExchangeRatesRejected>(new
+      if (response.Is(out Response<IEcbExchangeRatesRejected>? rejected))
       {
-        EventId = NewId.NextGuid(),
-        InVar.Timestamp,
-        Symbols = model.Symbols.Split(',')
-      }).ConfigureAwait(false);
-
-      if (accepted.IsCompletedSuccessfully)
-      {
-        var response = await accepted.ConfigureAwait(false);
-        return Ok(response.Message.CurrencyExchange);
+        logger.LogWarning("Symbols {Symbols} rejected: {Reason}", rejected.Message.Symbols, rejected.Message.Reason);
+        return BadRequest(rejected.Message);
       }
 
-      if (accepted.IsCompleted)
-      {
-        await accepted.ConfigureAwait(false);
-        const string ERR_MESSAGE = "Symbols were not accepted. Please check the syntax!";
-        _logger.LogError(ERR_MESSAGE);
-        return Problem(ERR_MESSAGE);
-      }
-      else
-      {
-        var response = await rejected.ConfigureAwait(false);
-        _logger.LogError(response.Message.Reason);
-        return BadRequest(response.Message);
-      }
+      return Problem("Unexpected response from the ECB polling service.");
     }
-    catch (Exception ex)
+    catch (RequestTimeoutException ex)
     {
-      _logger.LogError(ex.Message);
-      return BadRequest(ex.Message);
+      logger.LogError(ex, "ECB polling service did not answer in time");
+      return Problem("The ECB polling service did not answer in time.", statusCode: StatusCodes.Status504GatewayTimeout);
     }
   }
 }

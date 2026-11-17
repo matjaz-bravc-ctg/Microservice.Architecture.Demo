@@ -10,5 +10,5 @@ public sealed class SymbolsSubmissionModel
   /// </summary>
   [Required]
   [FromQuery(Name = "Symbols")]
-  public string Symbols { get; set; }
+  public string Symbols { get; set; } = string.Empty;
 }

@@ -1,9 +1,11 @@
 ﻿using Exchange.Rates.Contracts.Models;
-using System.Threading.Tasks;
 
 namespace Exchange.Rates.Ecb.Polling.Api.Services;
 
 public interface IEcbExchangeRatesApi
 {
-  Task<EcbCurrencyExchange> GetLatestRates(string symbols = "USD");
+  /// <summary>
+  /// Gets the latest EUR based rates. <see cref="EcbCurrencyExchange.Rates"/> is null when the rates are not available.
+  /// </summary>
+  Task<EcbCurrencyExchange> GetLatestRates(string symbols = "USD", CancellationToken cancellationToken = default);
 }

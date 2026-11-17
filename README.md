@@ -1,7 +1,7 @@
 ![](res/Containers.jpg)
 # Microservice Architecture in ASP.NET Core
 
-This demo shows a working sample of microservices architecture using ASP.NET Core 6. It covers how to create microservices, how to create API gateways using [Ocelot](https://github.com/ThreeMammals/Ocelot), how to use [MassTransit](http://masstransit-project.com) as distributed application framework, [RabbitMQ](https://www.rabbitmq.com) as the message broker, how to unit test microservices using [xUnit](https://xunit.net) and how to deploy microservices using [Docker](https://www.docker.com/resources/what-container) containers on Linux distributions.
+This demo shows a working sample of microservices architecture using ASP.NET Core 10 (.NET 10). It covers how to create microservices, how to create API gateways using [Ocelot](https://github.com/ThreeMammals/Ocelot), how to use [MassTransit](http://masstransit-project.com) as distributed application framework, [RabbitMQ](https://www.rabbitmq.com) as the message broker, how to unit test microservices using [xUnit](https://xunit.net) and how to deploy microservices using [Docker](https://www.docker.com/resources/what-container) containers on Linux distributions.
 
 ## Introduction
 
@@ -33,11 +33,11 @@ Microsoft and Amazon also provide API Gateway services on the cloud: [Azure API 
 ## Architecture
 * **Exchange.Rates.Gateway**: Gateway to all APIs
 * **Exchange.Rates.CoinCap.OpenApi**: REST for retrieving pricing and market activity for crypto currencies
-* **Exchange.Rates.CoinCap.Polling.Api**: Service to retrieve crypto currencies info. It uses [CoinCap API 2.0](https://docs.coincap.io/)
+* **Exchange.Rates.CoinCap.Polling.Api**: Service to retrieve crypto currencies info. CoinCap API 2.0 has been discontinued, so it now uses the public [CoinGecko API v3](https://docs.coingecko.com/reference/coins-markets) (no API key needed) and maps the result to the original CoinCap response shape.
 * **Exchange.Rates.Ecb.OpenApi**: REST for European Central Bank (ECB) Foreign exchange rates
-* **Exchange.Rates.Ecb.Polling.Api**: Service to retrieve ECB exchange rates. It uses [ECB Foreign exchange rates API](https://exchangeratesapi.io/). Since you will need an API Key you have to [Sign Up](https://exchangeratesapi.io/pricing/).
+* **Exchange.Rates.Ecb.Polling.Api**: Service to retrieve ECB exchange rates. It uses the [Frankfurter API](https://frankfurter.dev/), which publishes the European Central Bank reference rates (no API key needed).
 
-Each service is hosted in it's own Docker container (take a look into docker-compose project).
+Each service is hosted in it's own Docker container (take a look into docker-compose project). Every service exposes a **/health** endpoint; the OpenApi and polling services also report the state of their RabbitMQ connection there.
 
 ![](res/Diagram.png)
 
@@ -58,8 +58,14 @@ After creating the certificate, you only have to share it with your container.
 services:
     rabbitmq:
         container_name: rabbitmq
-        image: rabbitmq:3.8-management-alpine
         hostname: rabbitmq
+        image: masstransit/rabbitmq:latest
+        healthcheck:
+            # Wait for the broker to create its Erlang cookie; running the CLI earlier would create it as root and break the broker
+            test: ["CMD-SHELL", "test -f /var/lib/rabbitmq/.erlang.cookie && rabbitmq-diagnostics -q ping"]
+            interval: 5s
+            timeout: 5s
+            retries: 30
         networks:
             - common_network
 
@@ -71,7 +77,8 @@ services:
             dockerfile: Exchange.Rates.CoinCap.OpenApi/Dockerfile
         restart: on-failure
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -82,7 +89,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.CoinCap.Polling.Api/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -93,7 +101,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.Ecb.OpenApi/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -104,7 +113,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.Ecb.Polling.Api/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -122,7 +132,8 @@ services:
             - exchange.rates.coincap.openapi
 
 networks:
-  common_network: {}
+    common_network:
+        driver: bridge
 ```
 and **Docker-compose.override.yml** file:
 ```yml
@@ -137,73 +148,60 @@ services:
 
     exchange.rates.coincap.openapi:
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ASPNETCORE_URLS=https://+:443;http://+:80
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=https://+:8081;http://+:8080
             - Kestrel__Certificates__Default__Path=/app/Infrastructure/Certificate/cert-aspnetcore.pfx
             - Kestrel__Certificates__Default__Password=SecretPassword
         ports:
-            - 4000:80
-            - 4001:443
-        volumes:
-            - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-            - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+            - 4000:8080
+            - 4001:8081
 
     exchange.rates.coincap.polling.api:
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ASPNETCORE_URLS=https://+:443;http://+:80
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=https://+:8081;http://+:8080
             - Kestrel__Certificates__Default__Path=/app/Infrastructure/Certificate/cert-aspnetcore.pfx
             - Kestrel__Certificates__Default__Password=SecretPassword
         ports:
-            - 7000:80
-            - 7001:443
-        volumes:
-            - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-            - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+            - 7000:8080
+            - 7001:8081
 
     exchange.rates.ecb.openapi:
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ASPNETCORE_URLS=https://+:443;http://+:80
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=https://+:8081;http://+:8080
             - Kestrel__Certificates__Default__Path=/app/Infrastructure/Certificate/cert-aspnetcore.pfx
             - Kestrel__Certificates__Default__Password=SecretPassword
         ports:
-            - 5000:80
-            - 5001:443
-        volumes:
-            - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-            - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+            - 5000:8080
+            - 5001:8081
 
     exchange.rates.ecb.polling.api:
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ASPNETCORE_URLS=https://+:443;http://+:80
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=https://+:8081;http://+:8080
             - Kestrel__Certificates__Default__Path=/app/Infrastructure/Certificate/cert-aspnetcore.pfx
             - Kestrel__Certificates__Default__Password=SecretPassword
         ports:
-            - 6000:80
-            - 6001:443
-        volumes:
-            - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-            - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+            - 6000:8080
+            - 6001:8081
 
     exchange.rates.gateway:
         environment:
-            - ASPNETCORE_ENVIRONMENT=Development
-            - ASPNETCORE_URLS=https://+:443;http://+:80
+            - ASPNETCORE_ENVIRONMENT=Docker
+            - ASPNETCORE_URLS=https://+:8081;http://+:8080
             - Kestrel__Certificates__Default__Path=/app/Infrastructure/Certificate/cert-aspnetcore.pfx
             - Kestrel__Certificates__Default__Password=SecretPassword
         ports:
-            - 8000:80
-            - 8001:443
-        volumes:
-          - ${APPDATA}/Microsoft/UserSecrets:/root/.microsoft/usersecrets:ro
-          - ${APPDATA}/ASP.NET/Https:/root/.aspnet/https:ro
+            - 8000:8080
+            - 8001:8081
 ```
 **NOTE**: When starting multiple containers with a compose file, a **common_network** is created in **which all containers are using**. Containers can reach each other with the container name.
 
+The services wait until RabbitMQ reports healthy, and they listen on ports 8080 (HTTP) and 8081 (HTTPS) inside the containers because the .NET images run as a non-root user.
+
 ## Setup the Containers
-To execute compose file, open Powershell, and navigate to the compose file in the root folder. Then execute the following command: **docker-compose up -d --build --remove-orphans**. The -d parameter executes the command detached. This means that the containers run in the background and don’t block your Powershell window.
+To execute compose file, open Powershell, and navigate to the compose file in the root folder. Then execute the following command: **docker-compose up -d --build --remove-orphans** (or **podman compose up -d --build** with Podman). The -d parameter executes the command detached. This means that the containers run in the background and don’t block your Powershell window.
 To check all running Containers use **docker ps**.
 
 ## Runnig in Docker
@@ -223,22 +221,36 @@ And access **Ecb API** through API Gateway:
 **[https://localhost:8001/exchangeratesecb/eurbaserates?symbols=USD,CHF,CZK](https://localhost:8001/exchangeratesecb/eurbaserates?symbols=USD,CHF,CZK)**
 ![](res/Gateway_Ecb.jpg)
 
-## Testing
-Test project includes both Unit and Integration tests:
+## Gateway: QoS and Caching
+Both gateway routes in **ocelot.json** use Ocelot's quality of service (Polly) and response caching ([CacheManager](https://ocelot.readthedocs.io/en/latest/features/caching.html), in-memory dictionary handle):
+```json
+"QoSOptions": { "ExceptionsAllowedBeforeBreaking": 3, "DurationOfBreak": 10000, "TimeoutValue": 20000 },
+"CacheOptions": { "TtlSeconds": 15, "Region": "coincap-assets" }
+```
+Crypto prices are cached for 15 seconds and ECB rates (published once a day) for 60 seconds. Call the same gateway URL twice and the second answer comes from the cache: the **timestamp** of a crypto asset stays the same until the TTL expires, while calling the CoinCap OpenApi service directly (port 4000) returns a new one every time.
 
-![](res/Tests.jpg)
+## Testing
+The test project covers both services end to end without RabbitMQ or the external APIs:
+* the OpenApi services are hosted with WebApplicationFactory, RabbitMQ is replaced with the MassTransit in-memory test harness, and the real polling consumers answer using fake API clients;
+* the polling services are hosted with stubbed HTTP responses, to check their configuration and health endpoints;
+* the CoinGecko and Frankfurter clients are unit tested against recorded responses.
+
+Tests use [xUnit v3](https://xunit.net) on Microsoft.Testing.Platform (selected in **global.json**). Run them with:
+```
+dotnet test --solution Exchange.Rates.Microservices.Demo.sln
+```
 
 ## Conclusion
 From today’s DevOps position it is necessary to change applications fast and often. Additionally, microservices should run inside a container and Docker is the defacto standard container.
 
 Enjoy!
 
-- [Visual Studio](https://www.visualstudio.com/vs/community) 2022 17.2.6 or greater
-- [.NET SDK 8.0](https://dotnet.microsoft.com/download/dotnet/8.0)
-- [Docker](https://www.docker.com/resources/what-container)
+- [Visual Studio](https://www.visualstudio.com/vs/community) 2026 or greater
+- [.NET SDK 10.0](https://dotnet.microsoft.com/download/dotnet/10.0)
+- [Docker](https://www.docker.com/resources/what-container) or [Podman](https://podman.io)
 
 ## Tags & Technologies
-- [.NET 8](https://github.com/dotnet/core/blob/main/release-notes/8.0)
+- [.NET 10](https://github.com/dotnet/core/blob/main/release-notes/10.0)
 - [Docker](https://www.docker.com/resources/what-container)  
 - [Ocelot](https://github.com/ThreeMammals/Ocelot)  
 - [MassTransit](http://masstransit-project.com)  

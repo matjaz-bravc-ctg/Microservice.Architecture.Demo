@@ -1,21 +1,20 @@
 ﻿using Newtonsoft.Json;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Exchange.Rates.Contracts.Models;
 
 /// <summary>
-/// Hold result of https://api.coincap.io/v2/assets/bitcoin request
+/// Crypto asset market data. Keeps the response shape of the original CoinCap API 2.0.
 /// </summary>
-[Serializable]
 [ExcludeFromCodeCoverage]
-[JsonObject(IsReference = false)]
 public class CoinCapAsset
 {
-
   [JsonProperty("data")]
-  public CoinCapData Data { get; set; }
+  public CoinCapData? Data { get; set; }
 
+  /// <summary>
+  /// Unix time in milliseconds when the data was retrieved.
+  /// </summary>
   [JsonProperty("timestamp")]
   public long TimeStamp { get; set; }
 }

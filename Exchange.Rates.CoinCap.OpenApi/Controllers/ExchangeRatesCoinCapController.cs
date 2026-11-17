@@ -1,11 +1,8 @@
 ﻿using Exchange.Rates.CoinCap.OpenApi.Models;
 using Exchange.Rates.Contracts.Messages;
+using Exchange.Rates.Contracts.Models;
 using MassTransit;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
-using System;
-using System.Threading.Tasks;
 
 namespace Exchange.Rates.CoinCap.OpenApi.Controllers;
 
@@ -17,62 +14,57 @@ public class ExchangeRatesCoinCapController(
   IRequestClient<ISubmitCoinCapAssetId> submitCoinCapAssetIdRequestClient)
   : ControllerBase
 {
-
   /// <summary>
   /// Crypto AssetInfo endpoint
   /// </summary>
   /// <remarks>
-  /// The asset price calculated by collecting ticker data from exchanges. Example Id: bitcoin
+  /// The asset price and market data in USD. Example Id: bitcoin
   /// </remarks>
   /// <param name="model">Unique identifier for asset. Ex: bitcoin</param>
-  /// <returns></returns>
+  /// <param name="cancellationToken">Request cancellation</param>
   /// <response code="200">Returned if everything is ok</response>
-  /// <response code="400">Returned if something went wrong</response>
+  /// <response code="400">Returned if the asset Id is missing or the asset is not available</response>
+  /// <response code="504">Returned if the polling service did not answer in time</response>
   [HttpGet("assetinfo")]
-  [ProducesResponseType(StatusCodes.Status200OK)]
+  [ProducesResponseType<CoinCapAsset>(StatusCodes.Status200OK)]
   [ProducesResponseType(StatusCodes.Status400BadRequest)]
-  public async Task<IActionResult> AssetInfo([FromQuery] AssetIdSubmissionModel model)
+  [ProducesResponseType(StatusCodes.Status504GatewayTimeout)]
+  public async Task<IActionResult> AssetInfo([FromQuery] AssetIdSubmissionModel model, CancellationToken cancellationToken)
   {
+    if (!ModelState.IsValid)
+    {
+      logger.LogWarning("Invalid model: {Errors}", ModelState);
+      return BadRequest(ModelState);
+    }
+
     try
     {
-      if (!ModelState.IsValid)
+      // https://masstransit.io/documentation/concepts/requests
+      Response<ICoinCapAssetAccepted, ICoinCapAssetRejected> response =
+        await submitCoinCapAssetIdRequestClient.GetResponse<ICoinCapAssetAccepted, ICoinCapAssetRejected>(new
+        {
+          EventId = NewId.NextGuid(),
+          InVar.Timestamp,
+          model.Id
+        }, cancellationToken);
+
+      if (response.Is(out Response<ICoinCapAssetAccepted>? accepted))
       {
-        logger.LogError("Invalid Model");
-        return BadRequest(ModelState);
+        return Ok(accepted.Message.AssetData);
       }
 
-      // https://masstransit-project.com/usage/requests.html#request-client
-      var (accepted, rejected) = await submitCoinCapAssetIdRequestClient.GetResponse<ICoinCapAssetAccepted, ICoinCapAssetRejected>(new
+      if (response.Is(out Response<ICoinCapAssetRejected>? rejected))
       {
-        EventId = NewId.NextGuid(),
-        InVar.Timestamp,
-        model.Id
-      }).ConfigureAwait(false);
-
-      if (accepted.IsCompletedSuccessfully)
-      {
-        var response = await accepted.ConfigureAwait(false);
-        return Ok(response.Message.AssetData);
+        logger.LogWarning("Asset {Id} rejected: {Reason}", rejected.Message.Id, rejected.Message.Reason);
+        return BadRequest(rejected.Message);
       }
 
-      if (accepted.IsCompleted)
-      {
-        await accepted.ConfigureAwait(false);
-        var errMessage = "Asset Id was not accepted. Please check the syntax!";
-        logger.LogError(errMessage);
-        return Problem(errMessage);
-      }
-      else
-      {
-        var response = await rejected.ConfigureAwait(false);
-        logger.LogError(response.Message.Reason);
-        return BadRequest(response.Message);
-      }
+      return Problem("Unexpected response from the CoinCap polling service.");
     }
-    catch (Exception ex)
+    catch (RequestTimeoutException ex)
     {
-      logger.LogError(ex, ex.Message);
-      return BadRequest(ex.Message);
+      logger.LogError(ex, "CoinCap polling service did not answer in time");
+      return Problem("The CoinCap polling service did not answer in time.", statusCode: StatusCodes.Status504GatewayTimeout);
     }
   }
 }

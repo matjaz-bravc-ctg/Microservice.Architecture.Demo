@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Exchange.Rates.Ecb.OpenApi.Filters;
 /// </summary>
 public class SwaggerDocumentFilter : IDocumentFilter
 {
-  private const string DOCS_URI = "https://exchangeratesapi.io/documentation/";
+  private const string DOCS_URI = "https://frankfurter.dev/";
 
   public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
   {
@@ -19,8 +19,8 @@ public class SwaggerDocumentFilter : IDocumentFilter
           {
               new()
               {
-                  Name = "ExchangeRatesCoinCap",
-                  Description = "Exchangerates API",
+                  Name = "ExchangeRatesEcb",
+                  Description = "ECB reference exchange rates (Frankfurter API)",
                   ExternalDocs = new OpenApiExternalDocs
                   {
                       Description = "Read more",
@@ -30,6 +30,6 @@ public class SwaggerDocumentFilter : IDocumentFilter
           };
 
     // Sort in ascending order by AssemblyName
-    swaggerDoc.Tags = tags.OrderBy(x => x.Name).ToList();
+    swaggerDoc.Tags = new HashSet<OpenApiTag>(tags.OrderBy(x => x.Name));
   }
 }

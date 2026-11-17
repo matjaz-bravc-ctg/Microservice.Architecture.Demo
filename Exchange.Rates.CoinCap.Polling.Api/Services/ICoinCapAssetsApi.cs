@@ -1,9 +1,11 @@
 ﻿using Exchange.Rates.Contracts.Models;
-using System.Threading.Tasks;
 
 namespace Exchange.Rates.CoinCap.Polling.Api.Services;
 
 public interface ICoinCapAssetsApi
 {
-  Task<CoinCapAsset> GetAssetData(string id);
+  /// <summary>
+  /// Gets market data of a crypto asset. <see cref="CoinCapAsset.Data"/> is null when the asset is not available.
+  /// </summary>
+  Task<CoinCapAsset> GetAssetData(string id, CancellationToken cancellationToken = default);
 }

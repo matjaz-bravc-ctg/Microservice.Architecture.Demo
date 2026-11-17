@@ -1,4 +1,4 @@
-﻿using Microsoft.OpenApi.Models;
+﻿using Microsoft.OpenApi;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Exchange.Rates.CoinCap.OpenApi.Filters;
 /// </summary>
 public class SwaggerDocumentFilter : IDocumentFilter
 {
-  private const string DOCS_URI = "https://docs.coincap.io/";
+  private const string DOCS_URI = "https://docs.coingecko.com/";
 
   public void Apply(OpenApiDocument swaggerDoc, DocumentFilterContext context)
   {
@@ -20,7 +20,7 @@ public class SwaggerDocumentFilter : IDocumentFilter
               new()
               {
                   Name = "ExchangeRatesCoinCap",
-                  Description = "CoinCap API 2.0",
+                  Description = "Crypto asset data (CoinGecko API v3)",
                   ExternalDocs = new OpenApiExternalDocs
                   {
                       Description = "Read more",
@@ -30,6 +30,6 @@ public class SwaggerDocumentFilter : IDocumentFilter
           };
 
     // Sort in ascending order by AssemblyName
-    swaggerDoc.Tags = tags.OrderBy(x => x.Name).ToList();
+    swaggerDoc.Tags = new HashSet<OpenApiTag>(tags.OrderBy(x => x.Name));
   }
 }

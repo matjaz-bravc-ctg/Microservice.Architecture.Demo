@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Exchange.Rates.Contracts.Messages.Base;
+﻿namespace Exchange.Rates.Contracts.Messages.Base;
 
 public interface IBaseContract
 {

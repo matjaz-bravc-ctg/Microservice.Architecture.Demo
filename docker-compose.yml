@@ -3,6 +3,12 @@ services:
         container_name: rabbitmq
         hostname: rabbitmq
         image: masstransit/rabbitmq:latest
+        healthcheck:
+            # Wait for the broker to create its Erlang cookie; running the CLI earlier would create it as root and break the broker
+            test: ["CMD-SHELL", "test -f /var/lib/rabbitmq/.erlang.cookie && rabbitmq-diagnostics -q ping"]
+            interval: 5s
+            timeout: 5s
+            retries: 30
         networks:
             - common_network
 
@@ -14,7 +20,8 @@ services:
             dockerfile: Exchange.Rates.CoinCap.OpenApi/Dockerfile
         restart: on-failure
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -25,7 +32,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.CoinCap.Polling.Api/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -36,7 +44,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.Ecb.OpenApi/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
@@ -47,7 +56,8 @@ services:
             context: .
             dockerfile: Exchange.Rates.Ecb.Polling.Api/Dockerfile
         depends_on:
-            - rabbitmq
+            rabbitmq:
+                condition: service_healthy
         networks:
             - common_network
 
