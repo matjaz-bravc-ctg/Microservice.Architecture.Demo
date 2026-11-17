@@ -1,0 +1,186 @@
+Exchange.Rates.Ecb.OpenApi/Controllers/ExchangeRatesEcbController.cs
+  s_d6b825e398babf::t_326a4efc390951 2,12-15,18,24,26-27,29,31-32,34,36-38,40-52,54,56,59,61-62,64-65,67,69-70
+Exchange.Rates.Ecb.OpenApi/Filters/SwaggerDocumentFilter.cs
+  s_d6b825e398babf::t_695a665ff8939c 1,14,22-23,33
+Exchange.Rates.CoinCap.Polling.Api/Consumers/SubmitCoinCapAssetFaultConsumer.cs
+  s_d6b825e398babf::t_326a4efc390951 6-7,11-13
+Exchange.Rates.Ecb.OpenApi/Exchange.Rates.Ecb.OpenApi.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 6-7,10-15
+Exchange.Rates.Gateway/ocelot.Development.json
+  s_d6b825e398babf::t_326a4efc390951 13-25,27-50
+Exchange.Rates.Gateway/ocelot.Docker.json
+  s_d6b825e398babf::t_326a4efc390951 13-25,27-50
+  s_d6b825e398babf::t_ba44cd1e1283b8 9
+Exchange.Rates.CoinCap.Polling.Api/Consumers/Definitions/SubmitCoinCapAssetDefinition.cs
+  s_d6b825e398babf::t_571b78a06d32a2 28,32
+  s_d6b825e398babf::t_326a4efc390951 1,7,10-11,14-20,30
+Exchange.Rates.CoinCap.Polling.Api/Consumers/SubmitCoinCapAssetConsumer.cs
+  s_d6b825e398babf::t_326a4efc390951 7-10,14-20,22-23,25-40,42-50
+Exchange.Rates.CoinCap.Polling.Api/Options/CoinCapAssetsApiOptions.cs
+  s_d6b825e398babf::t_326a4efc390951 1-2,6-8,10,12-14,17,19-23
+Exchange.Rates.CoinCap.Polling.Api/Services/CoinGeckoMarket.cs
+  s_d6b825e398babf::t_326a4efc390951 1-8,10-38
+Exchange.Rates.Contracts/Models/CoinCapAsset.cs
+  s_d6b825e398babf::t_326a4efc390951 7,13,15-17
+Exchange.Rates.Gateway/Exchange.Rates.Gateway.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 2-22
+Exchange.Rates.Ecb.Polling.Api/Exchange.Rates.Ecb.Polling.Api.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 8,10-11
+  s_d6b825e398babf::t_326a4efc390951 9
+Exchange.Rates.CoinCap.OpenApi/Models/AssetIdSubmissionModel.cs
+  s_d6b825e398babf::t_326a4efc390951 13
+Exchange.Rates.CoinCap.Polling.Api/Services/CoinGeckoAssetsApi.cs
+  s_d6b825e398babf::t_326a4efc390951 1-63
+Exchange.Rates.Tests/TestDoubles/StubHttpMessageHandler.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-26
+Exchange.Rates.Ecb.OpenApi/appsettings.Development.json
+  s_d6b825e398babf::t_81939a19272c5b 5
+Exchange.Rates.Tests/OpenApi/CoinCapOpenApiTests.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-77,91
+  s_d6b825e398babf::t_719b32fc148056 78-90
+Directory.Packages.props
+  s_d6b825e398babf::t_326a4efc390951 9
+  s_d6b825e398babf::t_9889ea9ec2cf02 1-8,10-24
+Exchange.Rates.Ecb.OpenApi/appsettings.Docker.json
+  s_d6b825e398babf::t_81939a19272c5b 5
+Exchange.Rates.Tests/Factories/PollingApiFactory.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-5,7,9,11-22,24-27,29-30,33-42
+  s_d6b825e398babf::t_9a52ef2e22272b 28,31
+Exchange.Rates.Gateway/Program.cs
+  s_d6b825e398babf::t_326a4efc390951 5-33
+  s_d6b825e398babf::t_571b78a06d32a2 4
+Directory.Build.props
+  s_d6b825e398babf::t_9889ea9ec2cf02 1-3,6-7
+  s_d6b825e398babf::t_326a4efc390951 4-5
+global.json
+  s_d6b825e398babf::t_9889ea9ec2cf02 1-5
+Exchange.Rates.Ecb.Polling.Api/appsettings.json
+  s_d6b825e398babf::t_326a4efc390951 4-5,35
+Exchange.Rates.Tests/Services/CoinGeckoAssetsApiTests.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-64
+Exchange.Rates.CoinCap.OpenApi/Dockerfile
+  s_d6b825e398babf::t_9889ea9ec2cf02 4,14,17
+  s_d6b825e398babf::t_326a4efc390951 6-8
+docker-compose.yml
+  s_d6b825e398babf::t_326a4efc390951 6,9-11,23-24,35-36,47-48,59-60
+  s_d6b825e398babf::t_25737ebc2fe0c4 7-8
+Exchange.Rates.Ecb.OpenApi/Dockerfile
+  s_d6b825e398babf::t_326a4efc390951 6-8
+  s_d6b825e398babf::t_9889ea9ec2cf02 4,14,17
+Exchange.Rates.CoinCap.OpenApi/Program.cs
+  s_d6b825e398babf::t_326a4efc390951 1-6,8,10,12-28,30-31,33-40,42-43,45-48,50-55,57-58,60-85
+Exchange.Rates.Contracts/Models/EcbCurrencyExchange.cs
+  s_d6b825e398babf::t_326a4efc390951 10,16
+Exchange.Rates.Contracts/Messages/Base/IBaseContract.cs
+  s_d6b825e398babf::t_326a4efc390951 1,8
+Exchange.Rates.Ecb.Polling.Api/Dockerfile
+  s_d6b825e398babf::t_326a4efc390951 6-8
+  s_d6b825e398babf::t_9889ea9ec2cf02 4,14,17
+Exchange.Rates.Tests/TestData.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-17
+Exchange.Rates.Ecb.Polling.Api/Consumers/SubmitExchangeRateSymbolsFaultConsumer.cs
+  s_d6b825e398babf::t_326a4efc390951 6-7,11-13
+Exchange.Rates.Ecb.Polling.Api/Consumers/Definitions/SubmitExchangeRateSymbolsDefinition.cs
+  s_d6b825e398babf::t_326a4efc390951 1,7,10-11,14-20,30
+  s_d6b825e398babf::t_571b78a06d32a2 28,32
+Exchange.Rates.Ecb.Polling.Api/Services/FrankfurterExchangeRatesApi.cs
+  s_d6b825e398babf::t_326a4efc390951 1-42
+Exchange.Rates.Ecb.Polling.Api/Options/ExchangeratesApiOptions.cs
+  s_d6b825e398babf::t_326a4efc390951 1-2,6-8,10,12,14-15,17,19-23
+Exchange.Rates.Ecb.OpenApi/appsettings.json
+  s_d6b825e398babf::t_81939a19272c5b 5
+  s_d6b825e398babf::t_695a665ff8939c 28
+Exchange.Rates.CoinCap.Polling.Api/appsettings.json
+  s_d6b825e398babf::t_326a4efc390951 4-5,35
+Exchange.Rates.Tests/OpenApi/EcbOpenApiTests.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-36,38-65,79
+  s_d6b825e398babf::t_f28ffdf4de46bd 37
+  s_d6b825e398babf::t_719b32fc148056 66-78
+Exchange.Rates.CoinCap.Polling.Api/Dockerfile
+  s_d6b825e398babf::t_326a4efc390951 6-8
+  s_d6b825e398babf::t_9889ea9ec2cf02 4,14,17
+Exchange.Rates.Ecb.Polling.Api/Services/IEcbExchangeRatesApi.cs
+  s_d6b825e398babf::t_326a4efc390951 7-11
+Exchange.Rates.CoinCap.Polling.Api/Exchange.Rates.CoinCap.Polling.Api.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 8,10-11
+  s_d6b825e398babf::t_326a4efc390951 9
+Exchange.Rates.Gateway/ocelot.json
+  s_d6b825e398babf::t_ba44cd1e1283b8 9
+  s_d6b825e398babf::t_326a4efc390951 13-25,27-50
+Exchange.Rates.CoinCap.Polling.Api/Services/ICoinCapAssetsApi.cs
+  s_d6b825e398babf::t_326a4efc390951 7-11
+Exchange.Rates.CoinCap.OpenApi/appsettings.json
+  s_d6b825e398babf::t_695a665ff8939c 28
+  s_d6b825e398babf::t_81939a19272c5b 5
+Exchange.Rates.Ecb.OpenApi/Models/SymbolsSubmissionModel.cs
+  s_d6b825e398babf::t_326a4efc390951 13
+Exchange.Rates.CoinCap.OpenApi/appsettings.Docker.json
+  s_d6b825e398babf::t_81939a19272c5b 5
+Exchange.Rates.CoinCap.Polling.Api/Program.cs
+  s_d6b825e398babf::t_326a4efc390951 1-5,7,9,11-30,32-35,37-48,50-56,58-67
+Exchange.Rates.Contracts/Exchange.Rates.Contracts.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 2-3
+Exchange.Rates.Contracts/Messages/IEcbExchangeRatesAccepted.cs
+  s_d6b825e398babf::t_326a4efc390951 8
+Exchange.Rates.Ecb.Polling.Api/Program.cs
+  s_d6b825e398babf::t_326a4efc390951 1-5,7,9,11-30,32-35,37-48,50-56,58-67
+Exchange.Rates.Tests/Factories/CoinCapOpenApiFactory.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-6,12,15-16,18,20-21,23-24,26-27,29-30
+Exchange.Rates.Tests/TestDoubles/FakeCoinCapAssetsApi.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-19
+Exchange.Rates.CoinCap.OpenApi/Controllers/ExchangeRatesCoinCapController.cs
+  s_d6b825e398babf::t_326a4efc390951 3,21,24,26-27,29,31-32,34,36-38,40-49,51,53,56,58-59,61-62,64,66-67
+Exchange.Rates.Contracts/Models/CoinCapData.cs
+  s_d6b825e398babf::t_326a4efc390951 10,13,16,19,22,25,28,31,34,37,40
+Exchange.Rates.Tests/Services/FrankfurterExchangeRatesApiTests.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-46
+Exchange.Rates.Gateway/Dockerfile
+  s_d6b825e398babf::t_9889ea9ec2cf02 4,12,15
+Exchange.Rates.CoinCap.OpenApi/Filters/SwaggerDocumentFilter.cs
+  s_d6b825e398babf::t_695a665ff8939c 1,14,23,33
+Exchange.Rates.Core/Options/MassTransitOptions.cs
+  s_d6b825e398babf::t_326a4efc390951 1-28
+Exchange.Rates.Contracts/Messages/IEcbExchangeRatesRejected.cs
+  s_d6b825e398babf::t_326a4efc390951 7
+Exchange.Rates.Tests/Factories/EcbOpenApiFactory.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-6,12,15-16,18,20-21,23-24,26-27,29-30
+Exchange.Rates.Ecb.OpenApi/Program.cs
+  s_d6b825e398babf::t_326a4efc390951 1-6,8,10,12-28,30-31,33-40,42-43,45-48,50-55,57-58,60-85
+Exchange.Rates.Tests/TestDoubles/FakeEcbExchangeRatesApi.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-25
+Exchange.Rates.Microservices.Demo.sln
+  s_d6b825e398babf::t_551e9370d2d4c1 24-26
+Exchange.Rates.CoinCap.OpenApi/Exchange.Rates.CoinCap.OpenApi.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 6-7,10-15
+Exchange.Rates.Tests/Exchange.Rates.Tests.csproj
+  s_d6b825e398babf::t_9889ea9ec2cf02 2-17,21
+  s_d6b825e398babf::t_ae03d2106bad86 1,18-20
+docker-compose.override.yml
+  s_d6b825e398babf::t_ba44cd1e1283b8 13,17-18,23,27-28,33,37-38,43,47-48,53,57-58
+Exchange.Rates.Tests/Polling/PollingApiTests.cs
+  s_d6b825e398babf::t_ae03d2106bad86 1-66
+README.md
+  s_d6b825e398babf::t_47d13dafe34a0e 4,36,38,40,62-68,80-81,92-93,104-105,116-117,135-136,151-152,156-157,161-162,166-167,171-172,176-177,181-182,186-187,191-192,196-197,201-202,204,224-231,233-236,238-241,248-250,253
+Exchange.Rates.CoinCap.OpenApi/appsettings.Development.json
+  s_d6b825e398babf::t_81939a19272c5b 5
+Exchange.Rates.Ecb.Polling.Api/Consumers/SubmitExchangeRateSymbolsConsumer.cs
+  s_d6b825e398babf::t_326a4efc390951 7-10,14-21,23-24,26-42,44-52
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "0.8.13",
+  "client_id": "ctg-provenance",
+  "client_version": "0.8.13",
+  "base_commit_sha": "6a57b8d759242ea16d95cb5f04638d6d4039eea4",
+  "prompts": {},
+  "sessions": {
+    "s_d6b825e398babf": {
+      "agent_id": {
+        "tool": "claude",
+        "id": "6377678f-d3af-4761-aecb-a6b06c202132",
+        "model": "claude-opus-5-5"
+      },
+      "human_author": "Matjaž Bravc <matjaz.bravc@comtradegaming.com>"
+    }
+  }
+}
